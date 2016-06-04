@@ -14,23 +14,35 @@
 
 (def app-db (r/atom default-db))
 
-(def app-frame (frame/make-frame hands/handlers subs/subscriptions logging/default-loggers))
+(defn create-app-frame
+  ([] (create-app-frame (frame/make-frame nil nil)))
+  ([frame]
+   (-> frame
+       (frame/register-event-handler :initialize-db (fn  [_ _] default-db))
+       (frame/register-event-handler :set-kv (fn  [db [_ k v]] (assoc db k v)))
+       (frame/register-subscription-handler
+        :name (partial (fn [db v]
+                         (let [db-value @db]
 
-(def event-queue (router/make-event-queue app-frame app-db))
+                           )) app-db)))))
 
-(def dispatch (partial router/dispatch event-queue app-frame))
+(def app-frame (create-app-frame))
 
-(defn- subscribe-app-db
-  "Returns a reagent/reaction which observes state."
-  [frame app-db subscription-spec]
-  (let [subscription-id (rf-util/get-subscription-id subscription-spec)
-        handler-fn (get-in frame [:subscriptions subscription-id])]
-    (if (nil? handler-fn)
-      (re-frame.logging/error frame
-                              "re-frame: no subscription handler registered for: \"" subscription-id "\".  Returning a nil subscription.")
-      (handler-fn app-db subscription-spec))))
+(defn dispatch
+  ([dispatch-v]
+   (reset! app-db (frame/process-event app-frame @app-db dispatch-v)))
+  ([app-db dispatch-v]
+   (reset! app-db (frame/process-event app-frame @app-db dispatch-v))))
 
 (defn subscribe [subscribe-v]
-  (subscribe-app-db app-frame app-db subscribe-v))
+  (reaction (frame/subscribe app-frame subscribe-v)))
 
-(assert @(subscribe [:name]) "Subscription is busted.")
+(comment
+
+  (dispatch [:initialize-db])
+
+  (dispatch [:set-kv :name (gensym "lemon")])
+
+  @(subscribe [:name])
+
+  )

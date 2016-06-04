@@ -1,17 +1,12 @@
 (ns p-frame.handlers
-  (:require [re-frame.frame]
+  (:require [re-frame.frame :as frame]
             [re-frame.middleware :as mw]))
 
-(defn test-handler [db [n]]
-  (js/console.log "db: " db)
-  (js/console.log n)
-  (assoc @db :name (rand)))
+(defn test-handler [db _]
+  (assoc db :name (gensym "Test!!")))
 
 (def handlers
-  {:initialize-db
-   (fn  [_ _] {:name "Joel Spolsky"})
+  :initialize-db
+  (fn  [_ _] {:name "Joel Spolsky"})
 
-   :set-kv
-   (fn [db [_ k v]] (assoc db k v))
-
-   :test test-handler})
+  :test test-handler)
