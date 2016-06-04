@@ -3,23 +3,34 @@
   (:require [reagent.core :as r]
             [re-frame.frame :as frame]
             [re-frame.router :as router]
-            [p-frame.handlers :refer [handlers]]))
+            [re-frame.utils :as rf-util]
+            [re-frame.logging :as logging]
+            [p-frame.handlers :as hands]
+            [p-frame.subs :as subs]))
 
-(def default-db {:name "re-frame"})
+(def log (fn [& xs] (apply #(js/console.log %) xs)))
+
+(def default-db {:name (gensym "re-frame")})
 
 (def app-db (r/atom default-db))
 
-(def subscriptions
-  (let [db app-db]
-    {:name (fn [& xs]
-             (println xs)
-             (reaction (:name @app-db)))}))
+(def app-frame (frame/make-frame hands/handlers subs/subscriptions logging/default-loggers))
 
-(def ^:private app-frame (frame/make-frame handlers subscriptions))
-(defonce ^:private event-queue (router/make-event-queue app-frame app-db))
+(def event-queue (router/make-event-queue app-frame app-db))
 
 (def dispatch (partial router/dispatch event-queue app-frame))
-(def subscribe (partial frame/subscribe app-frame))
 
-@(subscribe [:name])
-;;=> (:name)
+(defn- subscribe-app-db
+  "Returns a reagent/reaction which observes state."
+  [frame app-db subscription-spec]
+  (let [subscription-id (rf-util/get-subscription-id subscription-spec)
+        handler-fn (get-in frame [:subscriptions subscription-id])]
+    (if (nil? handler-fn)
+      (re-frame.logging/error frame
+                              "re-frame: no subscription handler registered for: \"" subscription-id "\".  Returning a nil subscription.")
+      (handler-fn app-db subscription-spec))))
+
+(defn subscribe [subscribe-v]
+  (subscribe-app-db app-frame app-db subscribe-v))
+
+(assert @(subscribe [:name]) "Subscription is busted.")
