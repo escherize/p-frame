@@ -29,7 +29,7 @@
   :cljsbuild
   {:builds
    [{:id           "dev"
-     :source-paths ["src/cljs" "src/cljc"]
+     :source-paths ["src/cljs"]
      :figwheel     {:on-jsload "p-frame.core/mount-root"}
      :compiler     {:main                 p-frame.core
                     :output-to            "resources/public/js/compiled/app.js"
@@ -38,7 +38,7 @@
                     :source-map-timestamp true}}
 
     {:id           "min"
-     :source-paths ["src/cljs" "src/cljc"]
+     :source-paths ["src/cljs"]
      :compiler     {:main            p-frame.core
                     :output-to       "resources/public/js/compiled/app.js"
                     :optimizations   :advanced
