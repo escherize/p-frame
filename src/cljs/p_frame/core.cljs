@@ -1,7 +1,6 @@
 (ns p-frame.core
     (:require [reagent.core :as reagent]
               [devtools.core :as devtools]
-              [p-frame.handlers]
               [p-frame.subs]
               [p-frame.views :as views]
               [p-frame.config :as config]))

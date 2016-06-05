@@ -2,7 +2,6 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.228"]
                  [reagent "0.5.1"]
-                 #_[re-frame "0.7.0"]
                  [binaryage/pure-frame "0.1.0"]]
 
   :plugins [[lein-cljsbuild "1.1.3"]]
@@ -30,7 +29,7 @@
   :cljsbuild
   {:builds
    [{:id           "dev"
-     :source-paths ["src/cljs"]
+     :source-paths ["src/cljs" "src/cljc"]
      :figwheel     {:on-jsload "p-frame.core/mount-root"}
      :compiler     {:main                 p-frame.core
                     :output-to            "resources/public/js/compiled/app.js"
@@ -39,13 +38,12 @@
                     :source-map-timestamp true}}
 
     {:id           "min"
-     :source-paths ["src/cljs"]
+     :source-paths ["src/cljs" "src/cljc"]
      :compiler     {:main            p-frame.core
                     :output-to       "resources/public/js/compiled/app.js"
                     :optimizations   :advanced
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
-
     ]}
 
   )
